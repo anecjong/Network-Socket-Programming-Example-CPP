@@ -131,3 +131,28 @@ This code is provided for educational purposes only. No warranties or guarantees
   ```
   Socket Programming Examples from https://github.com/anecjong/Network-Socket-Programming-Example-CPP
   ```
+
+### Using tcpdump
+
+When monitoring multicast traffic with tcpdump, you might see checksum warnings like this:
+
+```
+$ sudo tcpdump -i any host 238.238.238.238 and port 55556 -vv
+192.xxx.xxx.xxx.55555 > 238.238.238.238.55556: [bad udp cksum 0xa003 -> 0x4580!] UDP, length 2
+```
+
+Don't worry about these "bad udp cksum" warnings. They occur because tcpdump captures packets before the NIC hardware calculates the checksum. On modern Linux systems, checksum calculations are offloaded to the network interface hardware:
+
+```
+$ ethtool -k lo
+Features for lo:
+rx-checksumming: on [fixed]
+tx-checksumming: on
+	tx-checksum-ipv4: off [fixed]
+	tx-checksum-ip-generic: on [fixed]
+	tx-checksum-ipv6: off [fixed]
+	tx-checksum-fcoe-crc: off [fixed]
+	tx-checksum-sctp: on [fixed]
+```
+
+The packets are actually valid when they're transmitted - tcpdump just sees them before the checksums are calculated.
